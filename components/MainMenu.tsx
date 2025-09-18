@@ -173,19 +173,12 @@ export default function MainMenu() {
 	return (
 		<View style={styles.container}>
 			<BackgroundEffects />
-			
-			<Animated.View 
-				entering={FadeInLeft.delay(200).duration(800)}
-				style={styles.logoContainer}
-			>
-				<BlockerinoLogo style={{}} blockSize={6} />
-			</Animated.View>
 
 			<Animated.Text 
 				entering={BounceInUp.delay(400).duration(1000)} 
 				style={styles.logo}
 			>
-				blockerino
+				Block Blast X
 			</Animated.Text>
 			
 			<Animated.Text 
@@ -250,7 +243,7 @@ export default function MainMenu() {
 				entering={SlideInDown.delay(1200).duration(600)} 
 				style={styles.footer}
 			>
-				Beta Version • Made with ❤️
+				www.nexoracodes.com
 			</Animated.Text>
 		</View>
 	);

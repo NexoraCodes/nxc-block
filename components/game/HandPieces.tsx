@@ -2,9 +2,8 @@ import { DRAG_JUMP_LENGTH, GRID_BLOCK_SIZE, HAND_BLOCK_SIZE } from "@/constants/
 import { Hand } from "@/constants/Hand";
 import { createFilledBlockStyle } from "@/constants/Piece";
 import { SharedPoint, useDraggable } from "@mgcrea/react-native-dnd";
-import { Image, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, { SharedValue, runOnJS, useAnimatedStyle, withSequence, withTiming } from "react-native-reanimated";
-import { getBlockTextureForColor } from "@/constants/BlockTextures";
 
 interface HandProps {
 	hand: SharedValue<Hand>
@@ -48,18 +47,7 @@ export default function HandPieces({ hand }: HandProps) {
 
 					return style;
 				})
-                pieceBlocks.push(
-                    <Animated.View key={`p${x},${y}`} style={[styles.emptyBlock, animatedStyle]}>
-                        {/* Render block texture only when piece exists and block is filled */}
-                        {hand.value[i] && x < hand.value[i]!.matrix[0].length && y < hand.value[i]!.matrix.length && hand.value[i]!.matrix[y][x] == 1 && (
-                            <Image 
-                                source={getBlockTextureForColor(hand.value[i]!.color)}
-                                style={{ position: 'absolute', width: GRID_BLOCK_SIZE, height: GRID_BLOCK_SIZE }}
-                                resizeMode="cover"
-                            />
-                        )}
-                    </Animated.View>
-                )
+				pieceBlocks.push(<Animated.View key={`p${x},${y}`} style={[styles.emptyBlock, animatedStyle]}></Animated.View>)
 			}
 		}
 

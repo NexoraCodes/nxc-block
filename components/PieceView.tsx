@@ -1,7 +1,6 @@
 import { PieceData } from "@/constants/Piece";
-import { Image, View } from "react-native";
+import { View } from "react-native";
 import { createFilledBlockStyle } from "@/constants/Piece";
-import { getBlockTextureForColor } from "@/constants/BlockTextures";
 
 export function PieceView({piece, blockSize, style}: {piece: PieceData, blockSize: number, style?: any}) {
     const pieceHeight = piece.matrix.length;
@@ -16,16 +15,14 @@ export function PieceView({piece, blockSize, style}: {piece: PieceData, blockSiz
                     height: blockSize,
                     top: y * blockSize,
                     left: x * blockSize,
-                    position: 'absolute' as const,
+                    position: "absolute",
                     opacity: 0.8,
                 };
                 pieceBlocks.push(
-                    <Image
+                    <View
                         key={`${x},${y}`}
-                        source={getBlockTextureForColor(piece.color)}
-                        style={[blockStyle, { width: blockSize, height: blockSize }]}
-                        resizeMode="cover"
-                    />,
+                        style={[createFilledBlockStyle(piece.color, blockSize / 4), blockStyle]}
+                    ></View>,
                 );
             }
         }

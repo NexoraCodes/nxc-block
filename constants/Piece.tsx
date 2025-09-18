@@ -227,7 +227,7 @@ export const pieceColors = [
 	{ r: 227, g: 143, b: 16 },
 	{ r: 186, g: 19, b: 38 },
 	{ r: 16, g: 158, b: 40 },
-	{ r: 20, g: 56, b: 184 },
+	{ r: 30, g: 120, b: 255 },
 	{ r: 101, g: 19, b: 148 },
 	{ r: 31, g: 165, b: 222 }
 ]
@@ -290,40 +290,48 @@ export function getRandomPieceWorklet(): PieceData {
 	};
 }
 
-function getBorderColors(backgroundColor: Color) {
+function getGradientColors(color: Color) {
 	"worklet";
-	const { r, g, b } = backgroundColor;
-
-	// multipliers calculated from a screenshot
-	const multipliers = {
-		borderTopColor: { r: 214 / 131, g: 167 / 83, b: 247 / 203 },
-		borderLeftColor: { r: 164 / 131, g: 119 / 83, b: 224 / 203 },
-		borderRightColor: { r: 123 / 131, g: 69 / 83, b: 153 / 203 },
-		borderBottomColor: { r: 92 / 131, g: 43 / 83, b: 132 / 203 }
-	};
-
-	const clamp = (value: number) => Math.min(Math.max(Math.round(value), 0), 255);
-
-	const computeColor = (mult: any) =>
-		`rgb(${clamp(r * mult.r)}, ${clamp(g * mult.g)}, ${clamp(b * mult.b)})`;
-
+	const { r, g, b } = color;
+	
+	// Create lighter and darker variants for gradient
+	const lighten = (value: number, factor: number) => Math.min(255, value + (255 - value) * factor);
+	const darken = (value: number, factor: number) => value * (1 - factor);
+	
+	// Generate gradient colors
+	const topColor = `rgb(${lighten(r, 0.3)}, ${lighten(g, 0.3)}, ${lighten(b, 0.3)})`;
+	const bottomColor = `rgb(${darken(r, 0.3)}, ${darken(g, 0.3)}, ${darken(b, 0.3)})`;
+	const leftColor = `rgb(${lighten(r, 0.2)}, ${lighten(g, 0.2)}, ${lighten(b, 0.2)})`;
+	const rightColor = `rgb(${darken(r, 0.2)}, ${darken(g, 0.2)}, ${darken(b, 0.2)})`;
+	
 	return {
-		borderTopColor: computeColor(multipliers.borderTopColor),
-		borderLeftColor: computeColor(multipliers.borderLeftColor),
-		borderRightColor: computeColor(multipliers.borderRightColor),
-		borderBottomColor: computeColor(multipliers.borderBottomColor)
+		topColor,
+		bottomColor,
+		leftColor,
+		rightColor,
+		mainColor: colorToHex(color)
 	};
 }
 
-export function createFilledBlockStyle(color: Color, borderWidth: number = 7): object {
+export function createFilledBlockStyle(color: Color, borderWidth: number = 4): object {
 	"worklet";
+	const { topColor, bottomColor, leftColor, rightColor, mainColor } = getGradientColors(color);
+	
 	return {
-		backgroundColor: colorToHex(color), //'rgb(131, 83, 203)'
-		...getBorderColors(color),
+		backgroundColor: mainColor,
+		backgroundImage: `linear-gradient(135deg, ${topColor}, ${bottomColor})`,
+		borderColor: 'transparent',
 		borderWidth: borderWidth,
+		borderStyle: 'solid',
+		borderTopColor: topColor,
+		borderLeftColor: leftColor,
+		borderRightColor: rightColor,
+		borderBottomColor: bottomColor,
 		boxSizing: 'border-box',
-		boxShadow: 'none',
-		shadowOpacity: 0,
+		boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+		shadowOpacity: 0.5,
+		borderRadius: 2,
+		overflow: 'hidden',
 	}
 }
 

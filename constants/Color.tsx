@@ -6,28 +6,6 @@ export const cssColors = {
     spaceGray: "rgb(90, 90, 90)"
 }
 
-// App theme inspired by MainMenu/HighScores: teal-on-dark aesthetic
-export const theme = {
-    // backgrounds
-    background: '#0f1419',
-    surface: 'rgba(5, 5, 5, 0.95)',
-    overlay: 'rgba(20, 20, 20, 0.8)',
-    // brand accents
-    primary: '#009384',
-    primaryBright: '#00bfa5',
-    primaryAlt: '#26a69a',
-    neutralSurface: '#1a1a1a',
-    // text
-    textPrimary: '#ffffff',
-    textSecondary: '#888888',
-    textMuted: '#aaaaaa',
-    // borders
-    border: 'rgba(255, 255, 255, 0.08)',
-    borderEmphasis: 'rgba(0, 147, 132, 0.25)',
-    // status
-    warning: '#FF3333',
-};
-
 export interface Color {
     r: number,
     g: number,

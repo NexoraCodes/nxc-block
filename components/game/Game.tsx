@@ -2,7 +2,6 @@ import { PieceData, getBlockCount } from '@/constants/Piece';
 import { DndProvider, DndProviderProps, Rectangle } from '@mgcrea/react-native-dnd';
 import React, { DependencyList, useEffect, useRef } from 'react';
 import { Platform, SafeAreaView, StyleSheet, View } from 'react-native';
-import { theme } from '@/constants/Color';
 import { GestureHandlerRootView, State } from 'react-native-gesture-handler';
 import { ReduceMotion, runOnJS, useSharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -196,7 +195,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		padding: 0,
 		overflow: 'hidden',
-    backgroundColor: theme.background 
 	}
 })
 

@@ -1,7 +1,7 @@
 export default {
   expo: {
-    name: "blockerino",
-    slug: "blockerino",
+    name: "Block Blast X",
+    slug: "block-blast-x",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
@@ -21,12 +21,12 @@ export default {
     ],
     experiments: {
       typedRoutes: true,
-      baseUrl: "/blockerino"
+      baseUrl: "/block-blast-x"
     },
     // Platform-specific configurations
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.anonymous.blockerino"
+      bundleIdentifier: "com.nexoracodes.block-blast-x"
     },
     android: {
       adaptiveIcon: {
@@ -37,7 +37,7 @@ export default {
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      package: "com.anonymous.blockerino"
+      package: "com.nexoracodes.block-blast-x"
     },
     web: {
       bundler: "metro",
@@ -46,6 +46,10 @@ export default {
     },
     extra: {
       // Any extra configuration can go here
+      eas: {
+        projectId: "98bae1e3-fa9e-42e3-84d5-6a4b9d7916dc"
+      }
     }
+
   }
 };

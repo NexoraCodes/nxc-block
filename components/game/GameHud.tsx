@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
-import { RFValue } from "react-native-responsive-fontsize"
 import Animated, { SharedValue, interpolateColor, runOnJS, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from "react-native-reanimated"
 import { Hand } from "@/constants/Hand";
 import { GameModeType, MenuStateType, useAppState } from "@/hooks/useAppState";
 import { getHighScores } from "@/constants/Storage";
-import { Color, colorLerp, colorToHex, theme } from "@/constants/Color";
+import { Color, colorLerp, colorToHex } from "@/constants/Color";
+import { MaterialIcons } from '@expo/vector-icons';
 
 const comboBarGoodColor = colorToHex({r: 0, g: 255, b: 0});
 const comboBarBadColor = colorToHex({r: 255, g: 51, b: 51});
@@ -38,7 +38,7 @@ export function StatsGameHud({ score, combo, lastBrokenLine, hand}: GameHudProps
 			<View style={styles.scoreContainer}>
 				<Text style={{
 					color: 'white',
-					fontSize: RFValue(32),
+					fontSize: 50,
 					fontWeight: '700',
 					textShadowColor: 'rgb(0, 0, 0)',
 					textShadowOffset: { width: 3, height: 3 },
@@ -116,38 +116,34 @@ export function StickyGameHud({gameMode, score}: {gameMode: GameModeType, score:
 function SettingsButton() {
 	const [_appState, _setAppState, appendAppState ] = useAppState();
 
-    return <Pressable onPress={() => {appendAppState(MenuStateType.OPTIONS)}} style={styles.settingsButton}>
-		<Text style={styles.settingsEmoji}>
-			{"⚙️"}
-		</Text>
+	return <Pressable onPress={() => {appendAppState(MenuStateType.OPTIONS)}} style={styles.settingsButton}>
+			<MaterialIcons name="settings" size={24} color="white" />
 	</Pressable>
 }
 
 const styles = StyleSheet.create({
-    settingsButton: {
-		width: 48,
-		height: 48,
-		borderRadius: 16,
-        backgroundColor: theme.overlay,
+	settingsButton: {
+		width: 50,
+		height: 50,
+		borderRadius: 18,
+		backgroundColor: 'rgba(20, 20, 20, 0.8)',
 		justifyContent: 'center',
 		alignItems: 'center',
 		position: 'absolute',
 		alignSelf: 'flex-end',
 		zIndex: 1000,
-		top: 16,
-		right: 16
+		top: 30,
+		right: 30
 	},
-	settingsEmoji: {
-		color: 'white',
-		fontSize: RFValue(18)
-	},
-    highScoreLabel: {
-        color: 'rgb(240, 175, 12)',
-		fontSize: RFValue(18),
+	highScoreLabel: {
+		
+		color: 'rgb(240, 175, 12)',
+		fontSize: 35,
 		fontWeight: '700',
 		position: 'absolute',
-		top: 16,
-		left: 16
+		top: 40,
+		left: '50%',
+		transform: [{translateX: '-50%'}]
 	},
 	hudContainer: {
 		width: '100%',
@@ -163,25 +159,26 @@ const styles = StyleSheet.create({
 		marginTop: 14,
 		marginBottom: 14,
 	},
-    comboBarParent: {
-		width: '100%',
+	comboBarParent: {
+		width: '90%',
 		height: 16,
-        borderWidth: 2,
+		borderWidth: 2,
 		borderRadius: 10,
-        borderColor: theme.border,
+		borderColor: 'gray',
 		zIndex: 100,
 	},
-    comboBar: {
+	comboBar: {
 		height: 12,
 		borderRadius: 10,
-        backgroundColor: theme.primary,
+		backgroundColor: 'blue',
 		zIndex: 99,
 		position: 'absolute'
 	},
 	hudLabel: {
 		color: 'white',
+		fontFamily: 'Silkscreen',
 		fontWeight: '900',
-		fontSize: RFValue(20),
+		fontSize: 30,
 		marginLeft: 2,
 		alignSelf: 'flex-start',
 		position: 'absolute',
