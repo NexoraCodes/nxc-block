@@ -1,31 +1,34 @@
 import { PieceData, getBlockCount } from '@/constants/Piece';
 import { DndProvider, DndProviderProps, Rectangle } from '@mgcrea/react-native-dnd';
-import React, { DependencyList, useEffect, useRef } from 'react';
+import React, { DependencyList, useEffect, useRef, useState } from 'react';
 import { Platform, SafeAreaView, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView, State } from 'react-native-gesture-handler';
-import { ReduceMotion, runOnJS, useSharedValue } from 'react-native-reanimated';
+import { ReduceMotion, runOnJS, useSharedValue, useAnimatedReaction } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { BoardBlockType, GRID_BLOCK_SIZE, JS_emptyPossibleBoardSpots, PossibleBoardSpots, XYPoint, breakLines, clearHoverBlocks, createPossibleBoardSpots, emptyPossibleBoardSpots, newEmptyBoard, placePieceOntoBoard, updateHoveredBreaks } from '@/constants/Board';
+import { BoardBlockType, GRID_BLOCK_SIZE, JS_emptyPossibleBoardSpots, PossibleBoardSpots, XYPoint, breakLines, clearHoverBlocks, createPossibleBoardSpots, emptyPossibleBoardSpots, newEmptyBoard, placePieceOntoBoard, updateHoveredBreaks, canAnyPieceFit, getResponsiveBlockSize } from '@/constants/Board';
 import { StatsGameHud, StickyGameHud } from '@/components/game/GameHud';
 import BlockGrid from '@/components/game/BlockGrid';
 import { createRandomHand, createRandomHandWorklet } from '@/constants/Hand';
 import HandPieces from '@/components/game/HandPieces';
-import { GameModeType } from '@/hooks/useAppState';
+import { GameModeType, useSetAppState, MenuStateType } from '@/hooks/useAppState';
 import { createHighScore, HighScoreId, updateHighScore } from '@/constants/Storage';
+import GameOverScreen from '@/components/GameOverScreen';
 
-// layout = active/dragging
-const pieceOverlapsRectangle = (layout: Rectangle, other: Rectangle) => {
-	"worklet";
-	if (other.width == 0 && other.height == 0) {
-		return false;
-	}
+// Create responsive pieceOverlapsRectangle function
+const createPieceOverlapsRectangle = (blockSize: number) => {
+	return (layout: Rectangle, other: Rectangle) => {
+		"worklet";
+		if (other.width == 0 && other.height == 0) {
+			return false;
+		}
 
-	return (
-		layout.x < other.x + other.width &&
-		layout.x + GRID_BLOCK_SIZE > other.x &&
-		layout.y < other.y + other.height &&
-		layout.y + GRID_BLOCK_SIZE > other.y
-	);
+		return (
+			layout.x < other.x + other.width &&
+			layout.x + blockSize > other.x &&
+			layout.y < other.y + other.height &&
+			layout.y + blockSize > other.y
+		);
+	};
 };
 
 const SPRING_CONFIG_MISSED_DRAG = {
@@ -53,8 +56,10 @@ function runPiecePlacedHaptic() {
 }
 
 export const Game = (({gameMode}: {gameMode: GameModeType}) => {
+	const [setAppState, appendAppState, popAppState] = useSetAppState();
 	const boardLength = gameMode == GameModeType.Chaos ? 10 : 8;
 	const handSize = gameMode == GameModeType.Chaos ? 5 : 3;
+	const responsiveBlockSize = getResponsiveBlockSize(boardLength);
 	const board = useSharedValue(newEmptyBoard(boardLength));
 	const draggingPiece = useSharedValue<number | null>(null);
 	const possibleBoardDropSpots = useSharedValue<PossibleBoardSpots>(JS_emptyPossibleBoardSpots(boardLength));
@@ -63,6 +68,7 @@ export const Game = (({gameMode}: {gameMode: GameModeType}) => {
 	const combo = useSharedValue(0);
 	// How many moves ago was the last broken line?
 	const lastBrokenLine = useSharedValue(0);
+	const isGameOver = useSharedValue(false);
 
 	const scoreStorageId = useSharedValue<HighScoreId | undefined>(undefined);
 
@@ -73,6 +79,34 @@ export const Game = (({gameMode}: {gameMode: GameModeType}) => {
 			scoreStorageId.value = id;
 		});
 	}, [scoreStorageId]);
+
+	const checkGameOver = () => {
+		"worklet";
+		// Check if any piece in hand can fit on the board
+		if (!canAnyPieceFit(board.value, hand.value)) {
+			isGameOver.value = true;
+		}
+	};
+
+	const restartGame = () => {
+		board.value = newEmptyBoard(boardLength);
+		hand.value = createRandomHand(handSize);
+		score.value = 0;
+		combo.value = 0;
+		lastBrokenLine.value = 0;
+		isGameOver.value = false;
+		draggingPiece.value = null;
+		possibleBoardDropSpots.value = JS_emptyPossibleBoardSpots(boardLength);
+		
+		// Create new high score entry
+		createHighScore({score: 0, date: new Date().getTime(), type: gameMode}).then((id) => {
+			scoreStorageId.value = id;
+		});
+	};
+
+	const goToMainMenu = () => {
+		popAppState();
+	};
 
 	const handleDragEnd: DndProviderProps["onDragEnd"] = ({ active, over }) => {
 		"worklet";
@@ -127,6 +161,9 @@ export const Game = (({gameMode}: {gameMode: GameModeType}) => {
 				hand.value = newHand;
 			}
 			board.value = newBoard;
+			
+			// Check for game over after placing the piece
+			checkGameOver();
 		} else {
 			board.value = clearHoverBlocks([...board.value]);
 		}
@@ -171,16 +208,48 @@ export const Game = (({gameMode}: {gameMode: GameModeType}) => {
 		board.value = newBoard
 	}
 	
+	const [gameOverVisible, setGameOverVisible] = useState(false);
+	const [finalScore, setFinalScore] = useState(0);
+
+	// Watch for game over state changes
+	useAnimatedReaction(() => {
+		return isGameOver.value;
+	}, (current) => {
+		if (current) {
+			runOnJS(setFinalScore)(score.value);
+			runOnJS(setGameOverVisible)(true);
+		}
+	});
+
+	const handleRestart = () => {
+		setGameOverVisible(false);
+		restartGame();
+	};
+
+	const handleMainMenu = () => {
+		setGameOverVisible(false);
+		goToMainMenu();
+	};
+
 	return (        
 		<SafeAreaView style={styles.root}>
 			<GestureHandlerRootView style={styles.root}>
 				<View style={styles.root}>
 					<StickyGameHud gameMode={gameMode} score={score}></StickyGameHud>
-					<DndProvider shouldDropWorklet={pieceOverlapsRectangle} springConfig={SPRING_CONFIG_MISSED_DRAG} onBegin={handleBegin} onFinalize={handleFinalize} onDragEnd={handleDragEnd} onUpdate={handleUpdate}>
+					<DndProvider shouldDropWorklet={createPieceOverlapsRectangle(responsiveBlockSize)} springConfig={SPRING_CONFIG_MISSED_DRAG} onBegin={handleBegin} onFinalize={handleFinalize} onDragEnd={handleDragEnd} onUpdate={handleUpdate}>
 						<StatsGameHud score={score} combo={combo} lastBrokenLine={lastBrokenLine} hand={hand}></StatsGameHud>
 						<BlockGrid board={board} possibleBoardDropSpots={possibleBoardDropSpots} hand={hand} draggingPiece={draggingPiece}></BlockGrid>
-						<HandPieces hand={hand}></HandPieces>
+						<HandPieces hand={hand} boardLength={boardLength}></HandPieces>
 					</DndProvider>
+					
+					{/* Game Over Screen */}
+					<GameOverScreen
+						visible={gameOverVisible}
+						score={finalScore}
+						gameMode={gameMode}
+						onRestart={handleRestart}
+						onMainMenu={handleMainMenu}
+					/>
 				</View>
 			</GestureHandlerRootView>
 		</SafeAreaView>

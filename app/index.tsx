@@ -9,7 +9,7 @@ import Animated, {
 import Game from "@/components/game/Game";
 import { GameModeType } from '@/hooks/useAppState';
 import React from "react";
-import OptionsMenu from "@/components/OptionsMenu";
+import OptionsMenu from "@/components/optionsMenu";
 import { MenuStateType, useAppState } from "@/hooks/useAppState";
 import MainMenu from "@/components/MainMenu";
 import HighScores from "@/components/HighScoresMenu";

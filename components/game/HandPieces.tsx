@@ -1,4 +1,4 @@
-import { DRAG_JUMP_LENGTH, GRID_BLOCK_SIZE, HAND_BLOCK_SIZE } from "@/constants/Board";
+import { DRAG_JUMP_LENGTH, GRID_BLOCK_SIZE, HAND_BLOCK_SIZE, getResponsiveBlockSize, getResponsiveHandBlockSize } from "@/constants/Board";
 import { Hand } from "@/constants/Hand";
 import { createFilledBlockStyle } from "@/constants/Piece";
 import { SharedPoint, useDraggable } from "@mgcrea/react-native-dnd";
@@ -6,11 +6,14 @@ import { StyleSheet, View } from "react-native";
 import Animated, { SharedValue, runOnJS, useAnimatedStyle, withSequence, withTiming } from "react-native-reanimated";
 
 interface HandProps {
-	hand: SharedValue<Hand>
+	hand: SharedValue<Hand>;
+	boardLength: number;
 }
 
-export default function HandPieces({ hand }: HandProps) {
+export default function HandPieces({ hand, boardLength }: HandProps) {
 	const handSize = hand.value.length;
+	const responsiveBlockSize = getResponsiveBlockSize(boardLength);
+	const responsiveHandBlockSize = getResponsiveHandBlockSize(boardLength);
 	const handPieces = [];
 	for (let i = 0; i < handSize; i++) {
 		// we'll make a 5x5 grid to store the piece data to come
@@ -36,10 +39,10 @@ export default function HandPieces({ hand }: HandProps) {
 						}
 					} else {
 						style = {
-							top: y * GRID_BLOCK_SIZE,
-							left: x * GRID_BLOCK_SIZE,
-							width: GRID_BLOCK_SIZE,
-							height: GRID_BLOCK_SIZE,
+							top: y * responsiveHandBlockSize,
+							left: x * responsiveHandBlockSize,
+							width: responsiveHandBlockSize,
+							height: responsiveHandBlockSize,
 							...createFilledBlockStyle(piece.color),
 							opacity: 1
 						}

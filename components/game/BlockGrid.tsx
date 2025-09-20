@@ -5,6 +5,8 @@ import {
 	GRID_BLOCK_SIZE,
 	HITBOX_SIZE,
 	PossibleBoardSpots,
+	getResponsiveBlockSize,
+	getResponsiveHitboxSize,
 } from "@/constants/Board";
 import { colorToHex } from "@/constants/Color";
 import { Hand } from "@/constants/Hand";
@@ -51,12 +53,18 @@ function createBlockStyle(x: number, y: number, board: SharedValue<Board>): any 
         } else if (block.blockType == BoardBlockType.HOVERED_BREAK_EMPTY || block.blockType == BoardBlockType.HOVERED_BREAK_FILLED) {
             const blockColor =
                 block.blockType == BoardBlockType.HOVERED_BREAK_EMPTY
-                    ? block.color
+                    ? block.hoveredBreakColor
                     : block.hoveredBreakColor;
-            style = {
-                ...createFilledBlockStyle(blockColor),
-                boxShadow: '0px 0px 30px ' + colorToHex(blockColor)
-            };
+            // Show colored blocks without shadow
+            const hasValidHoverColor = blockColor.r !== 0 || blockColor.g !== 0 || blockColor.b !== 0;
+            if (hasValidHoverColor) {
+                style = {
+                    ...createFilledBlockStyle(blockColor),
+                    opacity: 0.7
+                };
+            } else {
+                style = createEmptyBlockStyle();
+            }
         }
 
         return style;
@@ -73,23 +81,25 @@ export default function BlockGrid({
 }: BlockGridProps) {
 	const blockElements: any[] = [];
 	const boardLength = board.value.length;
+	const responsiveBlockSize = getResponsiveBlockSize(boardLength);
+	const responsiveHitboxSize = getResponsiveHitboxSize(boardLength);
 	forEachBoardBlock(board.value, (_block, x, y) => {
 		const blockStyle = createBlockStyle(x, y, board);
 		const blockPositionStyle = {
 			position: "absolute",
-			top: y * GRID_BLOCK_SIZE,
-			left: x * GRID_BLOCK_SIZE,
+			top: y * responsiveBlockSize,
+			left: x * responsiveBlockSize,
 		};
 
 		blockElements.push(
 			<Animated.View
 				key={`av${x},${y}`}
-				style={[styles.emptyBlock, blockPositionStyle as any, blockStyle]}
+				style={[styles.emptyBlock, blockPositionStyle as any, blockStyle, { width: responsiveBlockSize, height: responsiveBlockSize }]}
 			>
 				<BlockDroppable
 					x={x}
 					y={y}
-					style={styles.hitbox}
+					style={[styles.hitbox, { width: responsiveHitboxSize, height: responsiveHitboxSize }]}
 					possibleBoardDropSpots={possibleBoardDropSpots}
 				></BlockDroppable>
 			</Animated.View>
@@ -112,14 +122,14 @@ export default function BlockGrid({
 	
 	return (
 		<Animated.View
-			style={[
-				styles.grid,
-				{
-					width: GRID_BLOCK_SIZE * boardLength + 6,
-					height: GRID_BLOCK_SIZE * boardLength + 6,
-				},
-				gridStyle
-			]}
+				style={[
+					styles.grid,
+					{
+						width: responsiveBlockSize * boardLength + 6,
+						height: responsiveBlockSize * boardLength + 6,
+					},
+					gridStyle
+				]}
 		>
 			{blockElements}
 		</Animated.View>
